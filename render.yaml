@@ -1,23 +1,4 @@
 services:
-  # MySQL Database
-  - type: pserv
-    name: sindicato-db
-    plan: free
-    image:
-      url: mysql:8.0
-    envVars:
-      - key: MYSQL_ROOT_PASSWORD
-        scope: build,runtime
-      - key: MYSQL_DATABASE
-        value: sindicato
-        scope: build,runtime
-      - key: MYSQL_USER
-        scope: build,runtime
-      - key: MYSQL_PASSWORD
-        scope: build,runtime
-    diskSize: 1
-    healthCheckPath: /
-    
   # Backend API
   - type: web
     name: sindicato-api
@@ -27,25 +8,17 @@ services:
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/test-connection
-    depends_on:
-      - sindicato-db
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 5000
       - key: DB_HOST
-        fromService:
-          name: sindicato-db
-          property: host
+        scope: build,runtime
       - key: DB_USER
-        fromService:
-          name: sindicato-db
-          property: user
+        scope: build,runtime
       - key: DB_PASSWORD
-        fromService:
-          name: sindicato-db
-          property: password
+        scope: build,runtime
       - key: DB_NAME
         value: sindicato
       - key: DB_PORT
