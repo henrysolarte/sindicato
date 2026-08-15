@@ -1,0 +1,55 @@
+services:
+  # Backend API
+  - type: web
+    name: sindicato-api
+    runtime: node
+    plan: free
+    rootDir: back
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/test-connection
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DB_HOST
+        scope: build,runtime
+      - key: DB_USER
+        scope: build,runtime
+      - key: DB_PASSWORD
+        scope: build,runtime
+      - key: DB_NAME
+        scope: build,runtime
+      - key: DB_PORT
+        scope: build,runtime
+
+  # Frontend Sindegeologico
+  - type: web
+    name: sindegeologico-web
+    runtime: static
+    rootDir: front/sindegeologico
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://sindicato-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # Frontend Formulario SGC
+  - type: web
+    name: formulario-sgc-web
+    runtime: static
+    rootDir: front/formulario/FormularioSGC
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://sindicato-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
