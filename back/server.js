@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import { getPool, closePool } from './config/database.js';
+import { initializeDatabase } from './config/initialize-db.js';
 import usuariosRouter from './routes/usuarios.js';
 import noticiasRouter from './routes/noticias.js';
 import comunicadosRouter from './routes/comunicados.js';
@@ -63,10 +64,22 @@ app.use('/api/comunicados', comunicadosRouter);
 app.use('/api/actas', actasRouter);
 
 // Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`✓ Servidor ejecutándose en http://localhost:${PORT}`);
-  console.log(`✓ Prueba la conexión en: http://localhost:${PORT}/api/test-connection`);
-});
+async function startServer() {
+  try {
+    // Inicializar base de datos
+    await initializeDatabase();
+    
+    app.listen(PORT, () => {
+      console.log(`✓ Servidor ejecutándose en http://localhost:${PORT}`);
+      console.log(`✓ Prueba la conexión en: http://localhost:${PORT}/api/test-connection`);
+    });
+  } catch (err) {
+    console.error('❌ Error al iniciar servidor:', err.message);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 // Cerrar conexión al terminar
 process.on('SIGINT', async () => {
