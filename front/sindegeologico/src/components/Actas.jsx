@@ -116,32 +116,20 @@ export default function Actas() {
       
       const method = editando ? 'PUT' : 'POST';
 
-      let body;
-      let headers = {};
-
+      // Siempre usar FormData para consistencia
+      const body = new FormData();
+      body.append('numero_acta', formData.numero_acta);
+      body.append('nombre_acta', formData.nombre_acta);
+      body.append('fecha_acta', formData.fecha_acta);
+      body.append('observaciones', formData.observaciones);
       if (formData.archivo) {
-        // Usar FormData cuando hay archivo
-        body = new FormData();
-        body.append('numero_acta', formData.numero_acta);
-        body.append('nombre_acta', formData.nombre_acta);
-        body.append('fecha_acta', formData.fecha_acta);
-        body.append('observaciones', formData.observaciones);
         body.append('archivo', formData.archivo);
-      } else {
-        // Usar JSON cuando no hay archivo
-        headers['Content-Type'] = 'application/json';
-        body = JSON.stringify({
-          numero_acta: formData.numero_acta,
-          nombre_acta: formData.nombre_acta,
-          fecha_acta: formData.fecha_acta,
-          observaciones: formData.observaciones
-        });
       }
 
       const response = await fetch(url, {
         method: method,
-        headers: headers,
         body: body
+        // NO incluir Content-Type - el navegador lo establece automáticamente
       });
 
       const data = await response.json();

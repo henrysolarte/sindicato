@@ -70,30 +70,19 @@ export default function FormularioComunicados() {
     e.preventDefault();
 
     try {
-      let body;
-      let headers = {};
-
+      // Siempre usar FormData para consistencia
+      const body = new FormData();
+      body.append('fecha', formData.fecha);
+      body.append('elaboracion', formData.elaboracion);
+      body.append('observaciones', formData.observaciones);
       if (formData.archivo) {
-        // Usar FormData cuando hay archivo
-        body = new FormData();
-        body.append('fecha', formData.fecha);
-        body.append('elaboracion', formData.elaboracion);
-        body.append('observaciones', formData.observaciones);
         body.append('archivo', formData.archivo);
-      } else {
-        // Usar JSON cuando no hay archivo
-        headers['Content-Type'] = 'application/json';
-        body = JSON.stringify({
-          fecha: formData.fecha,
-          elaboracion: formData.elaboracion,
-          observaciones: formData.observaciones
-        });
       }
 
       const response = await fetch('https://sindicato-w3ev.onrender.com/api/comunicados', {
         method: 'POST',
-        headers: headers,
         body: body
+        // NO incluir Content-Type - el navegador lo establece automáticamente
       });
 
       const data = await response.json();

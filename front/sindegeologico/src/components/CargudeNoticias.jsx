@@ -101,22 +101,12 @@ export default function CargudeNoticias() {
     }
 
     try {
-      let body;
-      let headers = {};
-
+      // Siempre usar FormData para consistencia con multer
+      const body = new FormData();
+      body.append('titulo', formData.titulo);
+      body.append('contenido', formData.contenido);
       if (formData.imagen) {
-        // Usar FormData cuando hay archivo
-        body = new FormData();
-        body.append('titulo', formData.titulo);
-        body.append('contenido', formData.contenido);
         body.append('imagen', formData.imagen);
-      } else {
-        // Usar JSON cuando no hay archivo
-        headers['Content-Type'] = 'application/json';
-        body = JSON.stringify({
-          titulo: formData.titulo,
-          contenido: formData.contenido
-        });
       }
 
       const url = editando 
@@ -127,8 +117,8 @@ export default function CargudeNoticias() {
 
       const response = await fetch(url, {
         method: method,
-        headers: headers,
         body: body
+        // NO incluir Content-Type - el navegador lo establece automáticamente
       });
 
       const data = await response.json();
