@@ -158,18 +158,24 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
 
     if (comunicadosActuales.length === 0) {
       connection.release();
+      // Si se subió archivo pero no existe el comunicado, eliminar archivo
+      if (req.file) {
+        const filePath = path.join(uploadDir, req.file.filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
       return res.status(404).json({
         success: false,
         message: 'Comunicado no encontrado'
       });
     }
 
-    // Si hay archivo nuevo, eliminar el anterior
+    let archivoAnterior = null;
+
+    // Si hay archivo nuevo, guardar el anterior para eliminarlo después (en caso de éxito)
     if (req.file && comunicadosActuales[0].archivo_pdf) {
-      const filePath = path.join(uploadDir, comunicadosActuales[0].archivo_pdf);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
+      archivoAnterior = comunicadosActuales[0].archivo_pdf;
     }
 
     const updateData = [];
@@ -188,7 +194,7 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
       updateData.push('observaciones = ?');
       updateParams.push(observaciones);
     }
-    if (req.file) {
+    if (archivo_pdf) {
       updateData.push('archivo_pdf = ?');
       updateParams.push(archivo_pdf);
     }
@@ -206,10 +212,25 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
     connection.release();
 
     if (result.affectedRows === 0) {
+      // Si la BD falla pero subimos archivo, eliminar archivo
+      if (req.file) {
+        const filePath = path.join(uploadDir, req.file.filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
       return res.status(404).json({
         success: false,
         message: 'Comunicado no encontrado'
       });
+    }
+
+    // Solo eliminar archivo anterior si el UPDATE fue exitoso y había archivo nuevo
+    if (archivoAnterior) {
+      const filePath = path.join(uploadDir, archivoAnterior);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
     }
 
     res.json({
@@ -218,6 +239,15 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
     });
   } catch (error) {
     console.error('Error en PUT /comunicados/:id', error);
+    
+    // Si hay error, eliminar archivo subido si existe
+    if (req.file) {
+      const filePath = path.join(uploadDir, req.file.filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
     res.status(500).json({
       success: false,
       message: 'Error al actualizar comunicado',

@@ -157,18 +157,24 @@ router.put('/:id', upload.single('imagen'), async (req, res) => {
 
     if (noticiaActual.length === 0) {
       connection.release();
+      // Si se subió archivo pero no existe la noticia, eliminar archivo
+      if (req.file) {
+        const filePath = path.join(uploadDir, req.file.filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
       return res.status(404).json({
         success: false,
         message: 'Noticia no encontrada'
       });
     }
 
-    // Si hay imagen nueva, eliminar la anterior
+    let imagenAnterior = null;
+    
+    // Si hay imagen nueva, guardar la anterior para eliminarla después
     if (req.file && noticiaActual[0].imagen) {
-      const filePath = path.join(uploadDir, noticiaActual[0].imagen);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
+      imagenAnterior = noticiaActual[0].imagen;
     }
 
     const updateData = [];
@@ -183,7 +189,7 @@ router.put('/:id', upload.single('imagen'), async (req, res) => {
       updateData.push('contenido = ?');
       updateParams.push(contenido);
     }
-    if (req.file) {
+    if (imagen) {
       updateData.push('imagen = ?');
       updateParams.push(imagen);
     }
@@ -204,10 +210,25 @@ router.put('/:id', upload.single('imagen'), async (req, res) => {
     connection.release();
 
     if (result.affectedRows === 0) {
+      // Si la BD falla pero subimos archivo, eliminar archivo
+      if (req.file) {
+        const filePath = path.join(uploadDir, req.file.filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
       return res.status(404).json({
         success: false,
         message: 'Error al actualizar la noticia'
       });
+    }
+
+    // Solo eliminar imagen anterior si el UPDATE fue exitoso y había imagen nueva
+    if (imagenAnterior) {
+      const filePath = path.join(uploadDir, imagenAnterior);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
     }
 
     res.json({
@@ -216,6 +237,15 @@ router.put('/:id', upload.single('imagen'), async (req, res) => {
     });
   } catch (error) {
     console.error('Error en PUT /noticias/:id', error);
+    
+    // Si hay error, eliminar archivo subido si existe
+    if (req.file) {
+      const filePath = path.join(uploadDir, req.file.filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Error al actualizar noticia',
