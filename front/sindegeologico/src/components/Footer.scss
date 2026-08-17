@@ -1,0 +1,230 @@
+$VerdeSGC: #069169;
+$AmarilloCOL: #E6B43C;
+$AmarilloCOLOSC: #c79a32;
+$Negro: #4D4D4D;
+$blanco: white;
+$fondopaneles: #ebebeb;
+$Gris: #868585;
+$Fondopaginador: #c5c5c5;
+
+.ContenedorFooter {
+    background-color: white;
+    padding: 6% 4% 6% 4%;
+    border-radius: 1%;
+    width: 100%; 
+    margin: 20px 0; 
+}
+
+.ImagenF {
+    text-align: center;
+}
+
+.ImagenGob {
+    height: 40px;
+    margin: 0 auto;
+    transform: translateY(-2px);
+}
+
+.FondoFooter .TextoFinal a {
+    padding-right: 1%;
+    color: #005833;
+    font-size: 8pt;
+}
+
+.FondoFooter .TextoFinal {
+    margin-top: 2%;
+    text-align: center;
+}
+
+.FondoFooter .BotonesRedes p {
+    color: #005833 !important;
+    font-size: .8rem;
+    font-weight: 700;
+    margin-top: 2%;
+}
+
+.FondoFooter button img {
+    width: 150% !important;
+    height: 150% !important;
+}
+
+.FondoFooter button {
+    width: 50px;
+    height: 50px;
+}
+
+.Redes {
+    display: flex;
+    justify-content: center;
+    padding: 0 25% 0 25%;
+}
+
+.FondoFooter .CenteredButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.FondoFooter .CenteredButton img {
+    width: 24px;
+    height: 24px;
+}
+
+.Titulo {
+    color: white;
+    font-weight: 500;
+    margin-bottom: 0;
+}
+
+.FondoFooter p {
+    color: white;
+}
+
+.ContenedorFinal {
+    background-color: #535353;
+    padding: 6%;
+}
+
+.Link {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.Link a {
+    color: white;
+}
+
+.TituloFooter {
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+}
+
+.FondoFooter hr {
+    background-color: #fff;
+    border: 1px solid #fff;
+    height: 1px;
+    margin: 4px 0;
+    width: 100%;
+}
+
+#Lineas {
+    margin-bottom: 2%;
+}
+
+.ContenedorFooter h2 {
+    color: #005833;
+    font-weight: bold;
+    margin-bottom: 0% !important;
+}
+
+.ContenedorFooter h4 {
+    color: #005833;
+    font-weight: 600;
+}
+
+.ContenedorFooter p {
+    color: #4b4b4b;
+    padding-left: 1%;
+    margin-bottom: 0.5%;
+}
+
+.FondoFooter .BtnTwitter, .FondoFooter .BtnInsta {
+    background-color: #069169;
+}
+
+.Tw {
+    padding-right: 1%;
+}
+
+.Insta {
+    padding-right: 1%;
+}
+
+.ParteFinalFooter {
+    background-color: #36c;
+    padding: 1%;
+    width: 100%;
+    margin-top: 2%;
+}
+
+.LogoSGCRow {
+    margin-top: -90px;
+}
+
+.LogoSGC {
+    display: block;
+    max-height: 90px;
+    width: 95%;
+    margin: 0 auto;
+}
+
+.Descripcion{
+    font-size: 8pt;
+}
+
+/* Responsive para móvil */
+@media (max-width: 500px) {
+    .pagF {
+        padding: 8%;
+    }
+
+    .ImagenColombia, .ImagenGob {
+        width: 50%;
+        height: 50%;
+        display: inline-block;
+        margin: 0 auto;
+    }
+
+    .ParteFinalFooter {
+        text-align: center;
+    }
+
+    .Tw, .Fb, .Insta {
+        margin-bottom: 2%;
+    }
+
+    .Tw img, .Insta img {
+        width: 70%;
+        height: 70%;
+    }
+
+    .ContenedorFooter {
+        padding: 8%;
+        width: 100%; /* Ajusta el ancho para dispositivos móviles */
+    }
+
+    .Redes {
+        flex-direction: column;
+    }
+
+    .BotonesRedes {
+        margin: 10px 0; /* Ajusta el espacio entre los botones en móvil */
+    }
+
+    .col-sm-12 {
+        margin-bottom: 2%;
+    }
+
+    .Botones {
+        text-align: center;
+    }
+}
+
+.FondoFooter {
+    background-image: url('/assets/img/bg-footer.png');
+    background-size: cover; 
+    background-position: center; 
+    background-repeat: no-repeat; 
+    width: 100%; 
+    padding: 20px 0 0 0; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
