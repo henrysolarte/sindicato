@@ -139,16 +139,12 @@ router.post('/', upload.single('imagen'), async (req, res) => {
 router.put('/:id', upload.single('imagen'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { titulo, contenido } = req.body;
+    let { titulo, contenido } = req.body;
+    
+    // Asegurar que los strings están limpios
+    titulo = titulo ? String(titulo).trim() : undefined;
+    contenido = contenido ? String(contenido).trim() : undefined;
     const imagen = req.file ? req.file.filename : null;
-
-    // Validar que al menos uno de estos campos exista
-    if (!titulo && !contenido && !imagen) {
-      return res.status(400).json({
-        success: false,
-        message: 'Debe proporcionar al menos un campo para actualizar'
-      });
-    }
 
     const pool = await getPool();
     const connection = await pool.getConnection();
@@ -178,12 +174,12 @@ router.put('/:id', upload.single('imagen'), async (req, res) => {
     const updateData = [];
     const updateParams = [];
 
-    // Construir dinámicamente el UPDATE
-    if (titulo) {
+    // Construir dinámicamente el UPDATE - actualizar solo campos que cambien
+    if (titulo && titulo !== noticiaActual[0].titulo) {
       updateData.push('titulo = ?');
       updateParams.push(titulo);
     }
-    if (contenido) {
+    if (contenido && contenido !== noticiaActual[0].contenido) {
       updateData.push('contenido = ?');
       updateParams.push(contenido);
     }
@@ -196,6 +192,9 @@ router.put('/:id', upload.single('imagen'), async (req, res) => {
     updateData.push('updated_at = NOW()');
 
     updateParams.push(id);
+
+    console.log('UPDATE Query:', `UPDATE noticias SET ${updateData.join(', ')} WHERE id = ?`);
+    console.log('Params:', updateParams);
 
     const [result] = await connection.query(
       `UPDATE noticias SET ${updateData.join(', ')} WHERE id = ?`,
@@ -216,7 +215,7 @@ router.put('/:id', upload.single('imagen'), async (req, res) => {
       message: 'Noticia actualizada exitosamente'
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error en PUT /noticias/:id', error);
     res.status(500).json({
       success: false,
       message: 'Error al actualizar noticia',

@@ -138,7 +138,13 @@ router.post('/', upload.single('archivo'), async (req, res) => {
 router.put('/:id', upload.single('archivo'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { fecha, elaboracion, observaciones } = req.body;
+    let { fecha, elaboracion, observaciones } = req.body;
+    
+    // Limpiar strings
+    fecha = fecha ? String(fecha).trim() : undefined;
+    elaboracion = elaboracion ? String(elaboracion).trim() : undefined;
+    observaciones = observaciones ? String(observaciones).trim() : undefined;
+    
     const archivo_pdf = req.file ? req.file.filename : null;
 
     const pool = await getPool();
@@ -169,15 +175,16 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
     const updateData = [];
     const updateParams = [];
 
-    if (fecha !== undefined) {
+    // Construir dinámicamente el UPDATE con los campos que cambien
+    if (fecha && fecha !== comunicadosActuales[0].fecha) {
       updateData.push('fecha = ?');
       updateParams.push(fecha);
     }
-    if (elaboracion !== undefined) {
+    if (elaboracion && elaboracion !== comunicadosActuales[0].elaboracion) {
       updateData.push('elaboracion = ?');
       updateParams.push(elaboracion);
     }
-    if (observaciones !== undefined) {
+    if (observaciones && observaciones !== comunicadosActuales[0].observaciones) {
       updateData.push('observaciones = ?');
       updateParams.push(observaciones);
     }
@@ -218,7 +225,7 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
       message: 'Comunicado actualizado exitosamente'
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error en PUT /comunicados/:id', error);
     res.status(500).json({
       success: false,
       message: 'Error al actualizar comunicado',

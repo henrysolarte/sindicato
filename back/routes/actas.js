@@ -138,7 +138,14 @@ router.post('/', upload.single('archivo'), async (req, res) => {
 router.put('/:id', upload.single('archivo'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { numero_acta, nombre_acta, fecha_acta, observaciones } = req.body;
+    let { numero_acta, nombre_acta, fecha_acta, observaciones } = req.body;
+    
+    // Limpiar strings
+    numero_acta = numero_acta ? String(numero_acta).trim() : undefined;
+    nombre_acta = nombre_acta ? String(nombre_acta).trim() : undefined;
+    fecha_acta = fecha_acta ? String(fecha_acta).trim() : undefined;
+    observaciones = observaciones ? String(observaciones).trim() : undefined;
+    
     const archivo_pdf = req.file ? req.file.filename : null;
 
     const pool = await getPool();
@@ -166,25 +173,25 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
       }
     }
 
-    // Construir dinámicamente el UPDATE con los campos que se envíen
+    // Construir dinámicamente el UPDATE con los campos que cambien
     const updateData = [];
     const updateParams = [];
 
-    if (numero_acta !== undefined) {
+    if (numero_acta && numero_acta !== actasActuales[0].numero_acta) {
       updateData.push('numero_acta = ?');
       updateParams.push(numero_acta);
     }
-    if (nombre_acta !== undefined) {
+    if (nombre_acta && nombre_acta !== actasActuales[0].nombre_acta) {
       updateData.push('nombre_acta = ?');
-      updateParams.push(nombre_acta || null);
+      updateParams.push(nombre_acta);
     }
-    if (fecha_acta !== undefined) {
+    if (fecha_acta && fecha_acta !== actasActuales[0].fecha_acta) {
       updateData.push('fecha_acta = ?');
       updateParams.push(fecha_acta);
     }
-    if (observaciones !== undefined) {
+    if (observaciones && observaciones !== actasActuales[0].observaciones) {
       updateData.push('observaciones = ?');
-      updateParams.push(observaciones || null);
+      updateParams.push(observaciones);
     }
     if (req.file) {
       updateData.push('archivo_pdf = ?');
@@ -193,14 +200,6 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
 
     // Siempre actualizar updated_at
     updateData.push('updated_at = NOW()');
-
-    if (updateData.length === 1) { // Solo tiene updated_at
-      connection.release();
-      return res.status(400).json({
-        success: false,
-        message: 'Debe proporcionar al menos un campo para actualizar'
-      });
-    }
 
     updateParams.push(id);
 
@@ -223,7 +222,7 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
       message: 'Acta actualizada exitosamente'
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error en PUT /actas/:id', error);
     res.status(500).json({
       success: false,
       message: 'Error al actualizar acta',
