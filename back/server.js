@@ -72,22 +72,13 @@ app.use('/api/actas', actasRouter);
 const frontendBuildPath = path.join(__dirname, '../front/sindegeologico/dist');
 app.use(express.static(frontendBuildPath));
 
-// Manejar rutas HTML - SPA sin fallback a index.html
-app.get('*.html', (req, res, next) => {
-  const filePath = path.join(frontendBuildPath, req.path);
-  res.sendFile(filePath, (err) => {
-    if (err) {
-      next(); // Si no existe, continuar
-    }
-  });
-});
-
-// Fallback para rutas sin extensión (ej: /menu, /login)
+// Fallback para rutas sin extensión (SPA routing para React)
 app.get('*', (req, res) => {
-  // Si la ruta no tiene punto (no es archivo), servir index.html
-  if (!req.path.includes('.')) {
+  // Si la URL no tiene extensión de archivo, sirve index.html
+  if (!path.extname(req.path)) {
     res.sendFile(path.join(frontendBuildPath, 'index.html'));
   } else {
+    // Si tiene extensión pero no existe, 404
     res.status(404).send('Not Found');
   }
 });
