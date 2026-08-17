@@ -196,14 +196,6 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
     // Siempre actualizar updated_at
     updateData.push('updated_at = NOW()');
 
-    if (updateData.length === 1) { // Solo tiene updated_at
-      connection.release();
-      return res.status(400).json({
-        success: false,
-        message: 'Debe proporcionar al menos un campo para actualizar'
-      });
-    }
-
     updateParams.push(id);
 
     const [result] = await connection.query(
