@@ -18,18 +18,26 @@ export default function Actas() {
   });
 
   useEffect(() => {
-    // Obtener usuario del localStorage
-    const usuarioGuardado = localStorage.getItem('usuario');
+    // Obtener usuario del localStorage o sessionStorage
+    let usuarioGuardado = localStorage.getItem('usuario');
+    if (!usuarioGuardado) {
+      usuarioGuardado = sessionStorage.getItem('usuario');
+    }
     if (!usuarioGuardado) {
       window.location.href = '/login.html';
       return;
     }
-    setUsuario(JSON.parse(usuarioGuardado));
+    try {
+      setUsuario(JSON.parse(usuarioGuardado));
+    } catch (error) {
+      window.location.href = '/login.html';
+      return;
+    }
 
     // Cargar actas de la API
     const cargarActasInit = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/actas');
+        const response = await fetch('https://sindicato-w3ev.onrender.com/api/actas');
         const data = await response.json();
         setActas(data.data || []);
         setLoading(false);
@@ -103,8 +111,8 @@ export default function Actas() {
 
     try {
       const url = editando 
-        ? `http://localhost:5000/api/actas/${editando}`
-        : 'http://localhost:5000/api/actas';
+        ? `https://sindicato-w3ev.onrender.com/api/actas/${editando}`
+        : 'https://sindicato-w3ev.onrender.com/api/actas';
       
       const method = editando ? 'PUT' : 'POST';
 
@@ -155,7 +163,7 @@ export default function Actas() {
     if (!window.confirm('¿Estás seguro de que deseas eliminar esta acta?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/actas/${id}`, {
+      const response = await fetch(`https://sindicato-w3ev.onrender.com/api/actas/${id}`, {
         method: 'DELETE'
       });
 
@@ -175,7 +183,7 @@ export default function Actas() {
 
   const cargarActas = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/actas');
+      const response = await fetch('https://sindicato-w3ev.onrender.com/api/actas');
       const data = await response.json();
       setActas(data.data || []);
     } catch (error) {
@@ -294,7 +302,7 @@ export default function Actas() {
                               {acta.archivo_pdf && (
                                 <p style={{ marginBottom: '15px' }}>
                                   <a 
-                                    href={`http://localhost:5000/uploads/actas/${acta.archivo_pdf}`} 
+                                    href={`https://sindicato-w3ev.onrender.com/uploads/actas/${acta.archivo_pdf}`} 
                                     download 
                                     className="btn btn-sm"
                                     style={{ backgroundColor: '#069169', color: 'white', textDecoration: 'none' }}

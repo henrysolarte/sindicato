@@ -19,7 +19,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:5000/api/usuarios/login', {
+      const response = await fetch('https://sindicato-w3ev.onrender.com/api/usuarios/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -35,11 +35,25 @@ export default function Login() {
       if (data.success) {
         setMensaje('✓ Login exitoso - ' + data.usuario.nombre);
         setFormData({ correo: '', contrasena: '' });
-        // Guardar usuario en localStorage y redirigir
-        localStorage.setItem('usuario', JSON.stringify(data.usuario));
-        setTimeout(() => {
-          window.location.href = '/menu.html';
-        }, 1000);
+        
+        // Guardar usuario en localStorage y sessionStorage
+        const usuarioData = JSON.stringify(data.usuario);
+        localStorage.setItem('usuario', usuarioData);
+        sessionStorage.setItem('usuario', usuarioData);
+        
+        // Guardar token de sesión
+        localStorage.setItem('loginTime', new Date().getTime().toString());
+        
+        // Verificar que se guardó correctamente
+        const verificacion = localStorage.getItem('usuario');
+        if (verificacion) {
+          console.log('✓ Usuario guardado en localStorage');
+          setTimeout(() => {
+            window.location.href = '/menu.html';
+          }, 800);
+        } else {
+          setMensaje('Error al guardar sesión. Intente de nuevo.');
+        }
       } else {
         setMensaje('Error: ' + data.message);
       }

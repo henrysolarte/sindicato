@@ -14,13 +14,21 @@ export default function CargudeNoticias() {
   const [editando, setEditando] = useState(null);
 
   useEffect(() => {
-    // Obtener usuario del localStorage
-    const usuarioGuardado = localStorage.getItem('usuario');
+    // Obtener usuario del localStorage o sessionStorage
+    let usuarioGuardado = localStorage.getItem('usuario');
+    if (!usuarioGuardado) {
+      usuarioGuardado = sessionStorage.getItem('usuario');
+    }
     if (!usuarioGuardado) {
       window.location.href = '/login.html';
       return;
     }
-    setUsuario(JSON.parse(usuarioGuardado));
+    try {
+      setUsuario(JSON.parse(usuarioGuardado));
+    } catch (error) {
+      window.location.href = '/login.html';
+      return;
+    }
 
     // Cargar noticias de la API
     cargarNoticias();
@@ -28,7 +36,7 @@ export default function CargudeNoticias() {
 
   const cargarNoticias = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/noticias');
+      const response = await fetch('https://sindicato-w3ev.onrender.com/api/noticias');
       const data = await response.json();
       setNoticias(data.data || []);
       setLoading(false);
@@ -112,8 +120,8 @@ export default function CargudeNoticias() {
       }
 
       const url = editando 
-        ? `http://localhost:5000/api/noticias/${editando}`
-        : 'http://localhost:5000/api/noticias';
+        ? `https://sindicato-w3ev.onrender.com/api/noticias/${editando}`
+        : 'https://sindicato-w3ev.onrender.com/api/noticias';
       
       const method = editando ? 'PUT' : 'POST';
 
@@ -143,7 +151,7 @@ export default function CargudeNoticias() {
     if (!window.confirm('¿Estás seguro de que deseas eliminar esta noticia?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/noticias/${id}`, {
+      const response = await fetch(`https://sindicato-w3ev.onrender.com/api/noticias/${id}`, {
         method: 'DELETE'
       });
 
@@ -301,7 +309,7 @@ export default function CargudeNoticias() {
                             <div className="bg-white rounded shadow-sm overflow-hidden" style={{ borderLeft: '5px solid #069169', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
                               {noticia.imagen && (
                                 <img 
-                                  src={`http://localhost:5000/uploads/noticias/${noticia.imagen}`}
+                                  src={`https://sindicato-w3ev.onrender.com/uploads/noticias/${noticia.imagen}`}
                                   alt={noticia.titulo}
                                   style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                                 />

@@ -14,13 +14,21 @@ export default function FormularioComunicados() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
   useEffect(() => {
-    // Obtener usuario del localStorage
-    const usuarioGuardado = localStorage.getItem('usuario');
+    // Obtener usuario del localStorage o sessionStorage
+    let usuarioGuardado = localStorage.getItem('usuario');
+    if (!usuarioGuardado) {
+      usuarioGuardado = sessionStorage.getItem('usuario');
+    }
     if (!usuarioGuardado) {
       window.location.href = '/login.html';
       return;
     }
-    setUsuario(JSON.parse(usuarioGuardado));
+    try {
+      setUsuario(JSON.parse(usuarioGuardado));
+    } catch (error) {
+      window.location.href = '/login.html';
+      return;
+    }
 
     // Cargar comunicados de la API
     cargarComunicados();
@@ -28,7 +36,7 @@ export default function FormularioComunicados() {
 
   const cargarComunicados = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/comunicados');
+      const response = await fetch('https://sindicato-w3ev.onrender.com/api/comunicados');
       const data = await response.json();
       setComunicados(data.data || []);
       setLoading(false);
@@ -82,7 +90,7 @@ export default function FormularioComunicados() {
         });
       }
 
-      const response = await fetch('http://localhost:5000/api/comunicados', {
+      const response = await fetch('https://sindicato-w3ev.onrender.com/api/comunicados', {
         method: 'POST',
         headers: headers,
         body: body
@@ -267,7 +275,7 @@ export default function FormularioComunicados() {
                               )}
                               {comunicado.archivo_pdf && (
                                 <a 
-                                  href={`http://localhost:5000/uploads/comunicados/${comunicado.archivo_pdf}`} 
+                                  href={`https://sindicato-w3ev.onrender.com/uploads/comunicados/${comunicado.archivo_pdf}`} 
                                   download 
                                   className="btn btn-sm"
                                   style={{ backgroundColor: '#069169', color: 'white', textDecoration: 'none', alignSelf: 'flex-start' }}

@@ -8,21 +8,37 @@ export default function Menu() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Obtener usuario del localStorage
-    const usuarioGuardado = localStorage.getItem('usuario');
+    // Obtener usuario del localStorage o sessionStorage
+    let usuarioGuardado = localStorage.getItem('usuario');
+    
+    // Si no está en localStorage, intentar sessionStorage
     if (!usuarioGuardado) {
+      usuarioGuardado = sessionStorage.getItem('usuario');
+    }
+    
+    // Si no hay usuario, redirigir a login
+    if (!usuarioGuardado) {
+      console.log('No se encontró usuario en sesión');
       window.location.href = '/login.html';
       return;
     }
-    setUsuario(JSON.parse(usuarioGuardado));
+    
+    try {
+      setUsuario(JSON.parse(usuarioGuardado));
+      console.log('✓ Usuario cargado desde sesión');
+    } catch (error) {
+      console.error('Error al parsear usuario:', error);
+      window.location.href = '/login.html';
+      return;
+    }
 
     // Cargar datos de la API
     const cargarDatos = async () => {
       try {
         const [actasRes, comunicadosRes, noticiasRes] = await Promise.all([
-          fetch('http://localhost:5000/api/actas'),
-          fetch('http://localhost:5000/api/comunicados'),
-          fetch('http://localhost:5000/api/noticias')
+          fetch('https://sindicato-w3ev.onrender.com/api/actas'),
+          fetch('https://sindicato-w3ev.onrender.com/api/comunicados'),
+          fetch('https://sindicato-w3ev.onrender.com/api/noticias')
         ]);
 
         const actasData = await actasRes.json();
