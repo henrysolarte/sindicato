@@ -299,14 +299,6 @@ export default function Actas() {
                                   </a>
                                 </p>
                               )}
-                              <div className="d-flex gap-2 mt-auto">
-                                <button onClick={() => abrirFormularioEditar(acta)} className="btn btn-sm" style={{ backgroundColor: '#069169', color: 'white' }}>
-                                  <i className="bi bi-pencil"></i> Editar
-                                </button>
-                                <button onClick={() => eliminarActa(acta.id)} className="btn btn-sm btn-danger">
-                                  <i className="bi bi-trash"></i> Eliminar
-                                </button>
-                              </div>
                             </div>
                           </div>
                         ))}

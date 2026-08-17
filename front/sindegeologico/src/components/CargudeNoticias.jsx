@@ -316,21 +316,6 @@ export default function CargudeNoticias() {
                                     <i className="bi bi-calendar-event"></i> {new Date(noticia.fecha_publicacion).toLocaleDateString('es-ES')}
                                   </p>
                                 )}
-                                <div className="d-flex gap-2">
-                                  <button 
-                                    onClick={() => abrirFormularioEditar(noticia)}
-                                    className="btn btn-sm"
-                                    style={{ backgroundColor: '#069169', color: 'white' }}
-                                  >
-                                    <i className="bi bi-pencil"></i> Editar
-                                  </button>
-                                  <button 
-                                    onClick={() => eliminarNoticia(noticia.id)}
-                                    className="btn btn-sm btn-danger"
-                                  >
-                                    <i className="bi bi-trash"></i> Eliminar
-                                  </button>
-                                </div>
                               </div>
                             </div>
                           </div>
