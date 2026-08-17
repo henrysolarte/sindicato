@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { getPool, closePool } from './config/database.js';
 import { initializeDatabase } from './config/initialize-db.js';
 import usuariosRouter from './routes/usuarios.js';
@@ -10,6 +12,9 @@ import comunicadosRouter from './routes/comunicados.js';
 import actasRouter from './routes/actas.js';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -63,6 +68,14 @@ app.use('/api/noticias', noticiasRouter);
 app.use('/api/comunicados', comunicadosRouter);
 app.use('/api/actas', actasRouter);
 
+// --- CONFIGURACIÓN PARA SERVIR EL FRONTEND ---
+const frontendBuildPath = path.join(__dirname, '../front/sindegeologico/dist');
+app.use(express.static(frontendBuildPath));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendBuildPath, 'index.html'));
+});
+
 // Iniciar servidor
 async function startServer() {
   try {
@@ -70,8 +83,8 @@ async function startServer() {
     await initializeDatabase();
     
     app.listen(PORT, () => {
-      console.log(`✓ Servidor ejecutándose en http://localhost:${PORT}`);
-      console.log(`✓ Prueba la conexión en: http://localhost:${PORT}/api/test-connection`);
+      console.log(`✓ Servidor ejecutándose en puerto: ${PORT}`);
+      console.log(`✓ Prueba la conexión en: /api/test-connection`);
     });
   } catch (err) {
     console.error('❌ Error al iniciar servidor:', err.message);
