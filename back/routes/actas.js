@@ -144,34 +144,69 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
     const pool = await getPool();
     const connection = await pool.getConnection();
 
-    // Si hay archivo nuevo, obtener el anterior para eliminarlo
-    if (req.file) {
-      const [actas] = await connection.query(
-        'SELECT archivo_pdf FROM actas WHERE id = ?',
-        [id]
-      );
+    // Obtener el acta actual
+    const [actasActuales] = await connection.query(
+      'SELECT * FROM actas WHERE id = ?',
+      [id]
+    );
 
-      if (actas[0] && actas[0].archivo_pdf) {
-        const archivoAnterior = path.join(uploadDir, actas[0].archivo_pdf);
-        if (fs.existsSync(archivoAnterior)) {
-          fs.unlinkSync(archivoAnterior);
-        }
+    if (actasActuales.length === 0) {
+      connection.release();
+      return res.status(404).json({
+        success: false,
+        message: 'Acta no encontrada'
+      });
+    }
+
+    // Si hay archivo nuevo, eliminar el anterior
+    if (req.file && actasActuales[0].archivo_pdf) {
+      const archivoAnterior = path.join(uploadDir, actasActuales[0].archivo_pdf);
+      if (fs.existsSync(archivoAnterior)) {
+        fs.unlinkSync(archivoAnterior);
       }
     }
 
-    // Si no hay archivo nuevo, mantener el anterior
-    let archivoFinal = archivo_pdf;
-    if (!req.file) {
-      const [actas] = await connection.query(
-        'SELECT archivo_pdf FROM actas WHERE id = ?',
-        [id]
-      );
-      archivoFinal = actas[0]?.archivo_pdf || null;
+    // Construir dinámicamente el UPDATE con los campos que se envíen
+    const updateData = [];
+    const updateParams = [];
+
+    if (numero_acta !== undefined) {
+      updateData.push('numero_acta = ?');
+      updateParams.push(numero_acta);
+    }
+    if (nombre_acta !== undefined) {
+      updateData.push('nombre_acta = ?');
+      updateParams.push(nombre_acta || null);
+    }
+    if (fecha_acta !== undefined) {
+      updateData.push('fecha_acta = ?');
+      updateParams.push(fecha_acta);
+    }
+    if (observaciones !== undefined) {
+      updateData.push('observaciones = ?');
+      updateParams.push(observaciones || null);
+    }
+    if (req.file) {
+      updateData.push('archivo_pdf = ?');
+      updateParams.push(archivo_pdf);
     }
 
+    // Siempre actualizar updated_at
+    updateData.push('updated_at = NOW()');
+
+    if (updateData.length === 1) { // Solo tiene updated_at
+      connection.release();
+      return res.status(400).json({
+        success: false,
+        message: 'Debe proporcionar al menos un campo para actualizar'
+      });
+    }
+
+    updateParams.push(id);
+
     const [result] = await connection.query(
-      'UPDATE actas SET numero_acta = ?, nombre_acta = ?, fecha_acta = ?, observaciones = ?, archivo_pdf = ? WHERE id = ?',
-      [numero_acta, nombre_acta || null, fecha_acta, observaciones || null, archivoFinal, id]
+      `UPDATE actas SET ${updateData.join(', ')} WHERE id = ?`,
+      updateParams
     );
 
     connection.release();
@@ -179,14 +214,13 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Acta no encontrada'
+        message: 'Error al actualizar el acta'
       });
     }
 
     res.json({
       success: true,
-      message: 'Acta actualizada exitosamente',
-      archivo_pdf: archivoFinal
+      message: 'Acta actualizada exitosamente'
     });
   } catch (error) {
     console.error(error);

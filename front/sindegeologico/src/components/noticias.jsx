@@ -14,9 +14,18 @@ export default function Noticias() {
 
   const cargarNoticia = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/noticias?t=' + new Date().getTime());
+      // Agregar timestamp para evitar caché
+      const timestamp = new Date().getTime();
+      const response = await fetch(`https://sindicato-w3ev.onrender.com/api/noticias?t=${timestamp}`, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
       const data = await response.json();
-      console.log('Noticias cargadas:', data.data);
+      console.log('✓ Noticia más reciente:', data.data[0]?.titulo);
+      
       // Obtener la noticia más reciente
       if (data.data && data.data.length > 0) {
         setNoticia(data.data[0]);
@@ -104,7 +113,7 @@ export default function Noticias() {
                   <div className="image-container" style={{ width: '100%' }}>
                     {noticia.imagen ? (
                       <img 
-                        src={`http://localhost:5000/uploads/noticias/${noticia.imagen}`} 
+                        src={`https://sindicato-w3ev.onrender.com/uploads/noticias/${noticia.imagen}`} 
                         alt={noticia.titulo} 
                         className="img-fluid rounded shadow-lg" 
                         style={{ objectFit: 'cover', width: '100%', height: 'auto', maxHeight: '450px' }} 

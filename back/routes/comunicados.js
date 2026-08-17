@@ -144,18 +144,25 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
     const pool = await getPool();
     const connection = await pool.getConnection();
 
-    // Si hay archivo nuevo, obtener el anterior para eliminarlo
-    if (req.file) {
-      const [comunicados] = await connection.query(
-        'SELECT archivo_pdf FROM comunicados WHERE id = ?',
-        [id]
-      );
+    // Obtener el comunicado actual
+    const [comunicadosActuales] = await connection.query(
+      'SELECT * FROM comunicados WHERE id = ?',
+      [id]
+    );
 
-      if (comunicados.length > 0 && comunicados[0].archivo_pdf) {
-        const filePath = path.join(uploadDir, comunicados[0].archivo_pdf);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
+    if (comunicadosActuales.length === 0) {
+      connection.release();
+      return res.status(404).json({
+        success: false,
+        message: 'Comunicado no encontrado'
+      });
+    }
+
+    // Si hay archivo nuevo, eliminar el anterior
+    if (req.file && comunicadosActuales[0].archivo_pdf) {
+      const filePath = path.join(uploadDir, comunicadosActuales[0].archivo_pdf);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
       }
     }
 
@@ -179,11 +186,14 @@ router.put('/:id', upload.single('archivo'), async (req, res) => {
       updateParams.push(archivo_pdf);
     }
 
-    if (updateData.length === 0) {
+    // Siempre actualizar updated_at
+    updateData.push('updated_at = NOW()');
+
+    if (updateData.length === 1) { // Solo tiene updated_at
       connection.release();
       return res.status(400).json({
         success: false,
-        message: 'No hay datos para actualizar'
+        message: 'Debe proporcionar al menos un campo para actualizar'
       });
     }
 

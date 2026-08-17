@@ -142,32 +142,48 @@ router.put('/:id', upload.single('imagen'), async (req, res) => {
     const { titulo, contenido } = req.body;
     const imagen = req.file ? req.file.filename : null;
 
+    // Validar que al menos uno de estos campos exista
+    if (!titulo && !contenido && !imagen) {
+      return res.status(400).json({
+        success: false,
+        message: 'Debe proporcionar al menos un campo para actualizar'
+      });
+    }
+
     const pool = await getPool();
     const connection = await pool.getConnection();
 
-    // Si hay imagen nueva, obtener la anterior para eliminarla
-    if (req.file) {
-      const [noticias] = await connection.query(
-        'SELECT imagen FROM noticias WHERE id = ?',
-        [id]
-      );
+    // Verificar que la noticia existe
+    const [noticiaActual] = await connection.query(
+      'SELECT * FROM noticias WHERE id = ?',
+      [id]
+    );
 
-      if (noticias.length > 0 && noticias[0].imagen) {
-        const filePath = path.join(uploadDir, noticias[0].imagen);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
+    if (noticiaActual.length === 0) {
+      connection.release();
+      return res.status(404).json({
+        success: false,
+        message: 'Noticia no encontrada'
+      });
+    }
+
+    // Si hay imagen nueva, eliminar la anterior
+    if (req.file && noticiaActual[0].imagen) {
+      const filePath = path.join(uploadDir, noticiaActual[0].imagen);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
       }
     }
 
     const updateData = [];
     const updateParams = [];
 
-    if (titulo !== undefined) {
+    // Construir dinámicamente el UPDATE
+    if (titulo) {
       updateData.push('titulo = ?');
       updateParams.push(titulo);
     }
-    if (contenido !== undefined) {
+    if (contenido) {
       updateData.push('contenido = ?');
       updateParams.push(contenido);
     }
@@ -175,14 +191,9 @@ router.put('/:id', upload.single('imagen'), async (req, res) => {
       updateData.push('imagen = ?');
       updateParams.push(imagen);
     }
-
-    if (updateData.length === 0) {
-      connection.release();
-      return res.status(400).json({
-        success: false,
-        message: 'No hay datos para actualizar'
-      });
-    }
+    
+    // Siempre actualizar updated_at
+    updateData.push('updated_at = NOW()');
 
     updateParams.push(id);
 
@@ -196,7 +207,7 @@ router.put('/:id', upload.single('imagen'), async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Noticia no encontrada'
+        message: 'Error al actualizar la noticia'
       });
     }
 
